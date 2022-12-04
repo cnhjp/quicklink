@@ -15,8 +15,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-**/
+ **/
 
+/**
+ * 检查浏览器是否支持<link rel=prefetch>这种写法
+ */
 /**
  * Checks if a feature on `link` is natively supported.
  * Examples of features include `prefetch` and `preload`.
@@ -24,10 +27,15 @@
  * @return {Boolean} whether the feature is supported
  */
 function hasPrefetch(link) {
-  link = document.createElement('link');
-  return link.relList && link.relList.supports && link.relList.supports('prefetch');
+  link = document.createElement("link");
+  return (
+    link.relList && link.relList.supports && link.relList.supports("prefetch")
+  );
 }
 
+/**
+ * 通过创建<link rel=prefetch>的方式请求一个URL，返回一个Promise
+ */
 /**
  * Fetches a given URL using `<link rel=prefetch>`
  * @param {string} url - the URL to fetch
@@ -44,8 +52,12 @@ function viaDOM(url) {
 
     document.head.appendChild(link);
   });
-};
+}
 
+/**
+ * XHR请求一个URL，返回一个Promise
+ * 兼容性好，起兜底作用
+ */
 /**
  * Fetches a given URL using XMLHttpRequest
  * @param {string} url - the URL to fetch
@@ -55,16 +67,21 @@ function viaXHR(url) {
   return new Promise((res, rej, req) => {
     req = new XMLHttpRequest();
 
-    req.open(`GET`, url, req.withCredentials=true);
+    req.open(`GET`, url, (req.withCredentials = true));
 
     req.onload = () => {
-      (req.status === 200) ? res() : rej();
+      req.status === 200 ? res() : rej();
     };
 
     req.send();
   });
 }
 
+/**
+ * 如果浏览器支持fetch，则使用fetch
+ * 否则使用XHR
+ * 返回给使用者的是一个Promise对象
+ */
 /**
  * Fetches a given URL using the Fetch API. Falls back
  * to XMLHttpRequest if the API is not supported.
@@ -79,7 +96,11 @@ export function priority(url) {
   //
   // As of 2018, fetch() is high-priority in Chrome
   // and medium-priority in Safari.
-  return window.fetch ? fetch(url, {credentials: `include`}) : viaXHR(url);
+  return window.fetch ? fetch(url, { credentials: `include` }) : viaXHR(url);
 }
 
+/**
+ * 如果浏览器支持<link rel=prefetch>，则使用该方式提前获取资源
+ * 否则使用XHR
+ */
 export const supported = hasPrefetch() ? viaDOM : viaXHR;

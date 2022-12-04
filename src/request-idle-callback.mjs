@@ -12,10 +12,15 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-**/
+ **/
 
+/**
+ * 如果浏览器支持requestIdleCallback，则使用requestIdleCallback
+ * 否则使用setTimeout，1ms后执行
+ */
 // RIC and shim for browsers setTimeout() without it
-const requestIdleCallback = window.requestIdleCallback ||
+const requestIdleCallback =
+  window.requestIdleCallback ||
   function (cb) {
     const start = Date.now();
     return setTimeout(function () {
